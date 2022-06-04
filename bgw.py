@@ -27,11 +27,11 @@ class AddWire(Wire):
     """The output wire of an integer addition gate that computes `A + B`."""
 
     wire_a_id: int
-    """The wire corresponding to input `A`, as identified by that wire's index in the list of wires (i.e. circuit) that 
+    """The wire corresponding to input `A`, as identified by that wire's index in the list of wires (i.e. circuit) that
     this wire is part of."""
 
     wire_b_id: int
-    """The wire corresponding to input `B`, as identified by that wire's index in the list of wires (i.e. circuit) that 
+    """The wire corresponding to input `B`, as identified by that wire's index in the list of wires (i.e. circuit) that
     this wire is part of."""
 
 
@@ -43,7 +43,7 @@ class ConstMultWire(Wire):
     """The constant `c` to multiply with `A`."""
 
     wire_a_id: int
-    """The wire corresponding to input `A`, as identified by that wire's index in the list of wires (i.e. circuit) that 
+    """The wire corresponding to input `A`, as identified by that wire's index in the list of wires (i.e. circuit) that
     this wire is part of."""
 
 
@@ -52,11 +52,11 @@ class MultWire(Wire):
     """The output wire of a multiplication gate that computes `A * B`."""
 
     wire_a_id: int
-    """The wire corresponding to input `A`, as identified by that wire's index in the list of wires (i.e. circuit) that 
+    """The wire corresponding to input `A`, as identified by that wire's index in the list of wires (i.e. circuit) that
     this wire is part of."""
 
     wire_b_id: int
-    """The wire corresponding to input `B`, as identified by that wire's index in the list of wires (i.e. circuit) that 
+    """The wire corresponding to input `B`, as identified by that wire's index in the list of wires (i.e. circuit) that
     this wire is part of."""
 
 
@@ -67,28 +67,40 @@ class BGW:
     def create_shares(rng: SystemRandom, secret: int, share_count: int, mod: int) -> List[int]:
         """Divides the [secret] into [share_count] additive secret shares under modulo [mod] using [rng] as a source of
         randomness."""
-        raise Exception("Not implemented.")
+        shares = []
+        for _ in range(share_count-1):
+            shares.append(rng.randrange(mod))
+
+        final_share = (secret - sum(shares)) % mod
+        shares.append(final_share)
+        return shares
 
     @staticmethod
     def recover_secret(shares: List[int], mod: int) -> int:
         """Reconstructs the secret that the additive secret [shares] make up under modulo [mod]."""
-        raise Exception("Not implemented.")
+        return sum(shares) % mod
 
     @staticmethod
     def add(a_share: int, b_share: int, mod: int) -> int:
         """Adds the shares [a_share] and [b_share] together under modulo [mod]."""
-        raise Exception("Not implemented.")
+        return (a_share + b_share) % mod
 
     @staticmethod
     def const_mult(c: int, a_share: int, mod: int) -> int:
         """Multiplies the share [a_share] with the constant [c] under modulo [mod]."""
-        raise Exception("Not implemented.")
+        return (c * a_share) % mod
 
     @staticmethod
     def mult(is_alice: bool, x_share: int, y_share: int, z_share: int, a_prime: int, b_prime: int, mod: int) -> int:
         """Performs the masked multiplication corresponding to `A * B` using the formula from the slides, under modulo
         [mod]. The constant term is added only if [is_alice] is `True`."""
-        raise Exception("Not implemented.")
+
+        res = a_prime * y_share + b_prime * x_share + z_share
+
+        if is_alice:
+            res += a_prime * b_prime
+
+        return res % mod
 
     @staticmethod
     def run_circuit(clients: List[Client]) -> Dict[int, int]:
@@ -103,12 +115,38 @@ class TTP:
     def __init__(self, client_count: int, mod: int, rng: SystemRandom):
         """Initializes this [TTP], given the number of clients [client_count] participating in the protocol, the modulo
         [mod] to perform secret sharing under, and a source of randomness [rng]."""
-        raise Exception("Not implemented.")
+        self.client_count = client_count
+        self.mod = mod
+        self.rng = rng
+        self.triples = {}
+
+    def create_beaver_triple(self, gate_id: int, client_id: int) -> [int, int, int]:
+        """Generate beaver triple and shares"""
+        x = self.rng.randrange(self.mod)
+        y = self.rng.randrange(self.mod)
+        z = x*y % self.mod
+
+        x_shares = BGW.create_shares(self.rng, x, self.client_count, self.mod)
+        y_shares = BGW.create_shares(self.rng, y, self.client_count, self.mod)
+        z_shares = BGW.create_shares(self.rng, z, self.client_count, self.mod)
+
+        self.triples[gate_id] = [x_shares, y_shares, z_shares]
+
+        client_share = [x_shares[client_id], y_shares[client_id], z_shares[client_id]]
+        return client_share
+
 
     def get_beaver_triple(self, gate_id: int, client_id: int) -> [int, int, int]:
         """Returns shares of the Beaver triple for multiplication gate [gate_id] for [client_id]. Make sure that clients
         requesting shares for the same [gate_id] actually get shares of the same Beaver triple."""
-        raise Exception("Not implemented.")
+        if gate_id in self.triples:
+
+            return [self.triples[gate_id][0][client_id],
+                    self.triples[gate_id][1][client_id],
+                    self.triples[gate_id][2][client_id]]
+
+        return self.create_beaver_triple(gate_id, client_id)
+
 
 
 class Client:
