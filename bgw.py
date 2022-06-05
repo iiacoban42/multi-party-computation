@@ -106,7 +106,33 @@ class BGW:
     def run_circuit(clients: List[Client]) -> Dict[int, int]:
         """Makes the [clients] interactively compute their circuit by synchronously invoking their methods, and returns
         all outputs of the circuit."""
-        raise Exception("Not implemented.")
+
+        for client in clients:
+            client.set_clients(clients)
+            client.local_setup()
+
+        for client in clients:
+                client.interactive_setup()
+
+        progress = [0 for _ in range(len(clients))]
+
+        while True:
+            if progress[0] is None:
+                break
+            for i, client in enumerate(clients):
+                progress[i] = client.run_circuit_until_mult(progress[i]+1)
+
+            for client in clients:
+                client.interactive_setup()
+
+        circuit = {}
+        for client in clients:
+            if circuit == {}:
+                circuit = client.get_outputs()
+            else:
+                circuit = {k: circuit.get(k, 0) + client.get_outputs().get(k, 0) for k in set(circuit)}
+
+        return circuit
 
 
 class TTP:
@@ -120,7 +146,7 @@ class TTP:
         self.rng = rng
         self.triples = {}
 
-    def create_beaver_triple(self, gate_id: int, client_id: int) -> [int, int, int]:
+    def _create_beaver_triple(self, gate_id: int, client_id: int) -> [int, int, int]:
         """Generate beaver triple and shares"""
         x = self.rng.randrange(self.mod)
         y = self.rng.randrange(self.mod)
@@ -145,51 +171,102 @@ class TTP:
                     self.triples[gate_id][1][client_id],
                     self.triples[gate_id][2][client_id]]
 
-        return self.create_beaver_triple(gate_id, client_id)
+        return self._create_beaver_triple(gate_id, client_id)
 
 
 
 class Client:
     """A client in the BGW protocol."""
 
-    def __init__(self, client_id: int, ttp: TTP, circuit: List[Wire], inputs: Dict[int, int], mod: int,
-                 rng: SystemRandom):
+    def __init__(self, client_id: int, ttp: TTP, circuit: List[Wire], inputs: Dict[int, int], mod: int, rng: SystemRandom):
         """Constructs a new [Client], but does not do any significant computation yet. Here, [client_id] uniquely
         identifies this client, [ttp] is the TTP that will provide the client with shares of Beaver triples, [circuit]
         is the circuit that will be executed, [inputs] is a mapping from wire indices to this client's private input
         values, [mod] is the modulo under which the circuit is computed, and [rng] is the source of randomness used
         whenever possible."""
-        raise Exception("Not implemented.")
+        self.client_id = client_id
+        self.ttp = ttp
+        self.circuit = circuit
+        self.inputs = inputs
+        self.mod = mod
+        self.rng = rng
+        self.clients = []
+        self.output = {}
 
     def set_clients(self, clients: List[Client]):
         """Gives this client knowledge of the [Client]s that participate in the protocol."""
-        raise Exception("Not implemented.")
+        self.clients = clients
+        self.clients.sort(key=lambda x: x.client_id)
 
     def get_input_share(self, wire_id: int, requester_id: int) -> int:
         """Returns the share of this client's input at wire [wire_id] that they created for client [requester_id]. This
         client should validate that this request is sensible, but may assume that the requester is
         honest-but-curious."""
-        raise Exception("Not implemented.")
+        return self.input_shares[wire_id][requester_id]
+
 
     def get_masked_shares(self, wire_id: int) -> [int, int]:
         """Returns the masked shares `A - X` and `B - Y` that this client created for the multiplication at wire
         [wire_id]."""
-        raise Exception("Not implemented.")
+        wire_a = self.circuit[wire_id].wire_a_id
+        wire_b = self.circuit[wire_id].wire_b_id
+
+        a = self.get_input_share(wire_a, self.client_id) - self.beaver_shares[wire_a][0]
+        b = self.get_input_share(wire_b, self.client_id) - self.beaver_shares[wire_b][1]
+        return [a, b]
 
     def get_output_share(self, wire_id: int) -> int:
         """Returns the share that this client calculated for the wire [wire_id], to be used to reconstruct the value of
         this wire. This client should validate that this request is sensible, but may assume that the requester is
         honest-but-curious."""
-        raise Exception("Not implemented.")
+        gate = self.circuit[wire_id]
+
+        output_share = 0
+        if isinstance(gate, MultWire):
+            masked_shares = self.get_masked_shares(wire_id)
+
+            is_alice = (self.client_id == 0)
+
+            output_share = BGW.mult(is_alice,  self.beaver_shares[wire_id][0],
+                            self.beaver_shares[wire_id][1],
+                            self.beaver_shares[wire_id][2],
+                            masked_shares[0],
+                            masked_shares[1],
+                            self.mod
+                        )
+        elif isinstance(gate, AddWire):
+            output_share = BGW.add(self.get_input_share(gate.wire_a_id, self.client_id),
+                                   self.get_input_share(gate.wire_b_id, self.client_id),
+                                   self.mod)
+
+        elif isinstance(gate, ConstMultWire):
+            output_share = BGW.const_mult(gate.c,
+                                          self.get_input_share(gate.wire_a_id, self.client_id),
+                                          self.mod
+                                          )
+        elif isinstance(gate, InputWire):
+            output_share = self.get_input_share(wire_id, self.client_id)
+
+        return output_share
 
     def local_setup(self):
         """Performs the local part of the setup, which consists of creating shares for this client's inputs."""
-        raise Exception("Not implemented.")
+        self.input_shares = {}
+        for (wire, private_value) in self.inputs.items():
+            self.input_shares[wire] = BGW.create_shares(self.rng, private_value, len(self.clients), self.mod)
 
     def interactive_setup(self):
         """Performs the interactive part of the setup, which consist of retrieving shares of Beaver triples from the
         TTP and fetching the shares that other clients have created of their inputs for this client."""
-        raise Exception("Not implemented.")
+        self.beaver_shares = {}
+        self.peer_shares = {}
+        for wire, _ in self.inputs.items():
+            self.beaver_shares[wire] = self.ttp.get_beaver_triple(wire, self.client_id)
+
+            self.peer_shares[wire] = []
+
+            for client in self.clients:
+                self.peer_shares[wire].append(client.get_input_share(wire, self.client_id))
 
     def run_circuit_until_mult(self, start_at_wire_id: int) -> int | None:
         """Runs the circuit starting at wire [start_at_wire_id] until it encounters a multiplication gate. If a
@@ -198,12 +275,20 @@ class Client:
         multiplication it left off at by performing the interactive part of the multiplication. After that, this client
         continues to run the circuit until it encounters another multiplication gate. If this client is done with the
         circuit, this function returns `None`."""
-        raise Exception("Not implemented.")
+
+        for i in range(start_at_wire_id, len(self.circuit)):
+            if isinstance(self.circuit[start_at_wire_id], MultWire):
+                self.output[i] = self.get_output_share(i)
+                return i
+            else:
+                self.output[i] = self.get_output_share(i)
+
+        return None
 
     def get_outputs(self) -> Dict[int, int]:
         """Returns a dictionary from wire IDs to the reconstructed outputs at those wires, corresponding to all outputs
         of the circuit."""
-        raise Exception("Not implemented.")
+        return self.output
 
 
 def main():
