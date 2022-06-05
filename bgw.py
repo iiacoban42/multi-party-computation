@@ -114,16 +114,15 @@ class BGW:
         for client in clients:
             client.interactive_setup()
 
-        progress = [-1 for _ in range(len(clients))]
+        progress = [0 for _ in range(len(clients))]
 
         while True:
             if progress[0] is None:
                 break
             for i, client in enumerate(clients):
-                progress[i] = client.run_circuit_until_mult(progress[i]+1)
+                progress[i] = client.run_circuit_until_mult(progress[i])
 
-            for client in clients:
-                client.interactive_setup()
+            client.interactive_setup()
 
         circuit = {}
         for client in clients:
@@ -152,6 +151,7 @@ class TTP:
         y = self.rng.randrange(self.mod)
         z = x*y % self.mod
 
+        print(f"Triple({x}, {y}, {z})")
         x_shares = BGW.create_shares(self.rng, x, self.client_count, self.mod)
         y_shares = BGW.create_shares(self.rng, y, self.client_count, self.mod)
         z_shares = BGW.create_shares(self.rng, z, self.client_count, self.mod)
@@ -192,6 +192,7 @@ class Client:
         self.rng = rng
         self.clients = []
         self.output = {}
+        self.semaphore = False
 
     def set_clients(self, clients: List[Client]):
         """Gives this client knowledge of the [Client]s that participate in the protocol."""
@@ -217,7 +218,6 @@ class Client:
         """Performs the interactive part of the setup, which consist of retrieving shares of Beaver triples from the
         TTP and fetching the shares that other clients have created of their inputs for this client."""
         self.beaver_shares = {}
-        self.peer_shares = {}
 
         for wire_id, wire in enumerate(self.circuit):
             if isinstance(wire, MultWire):
@@ -232,9 +232,30 @@ class Client:
         wire_a = self.circuit[wire_id].wire_a_id
         wire_b = self.circuit[wire_id].wire_b_id
 
-        a = self.get_input_share(wire_a, self.client_id) - self.beaver_shares[wire_id][0]
-        b = self.get_input_share(wire_b, self.client_id) - self.beaver_shares[wire_id][1]
-        return [a, b]
+        # if isinstance(self.circuit[wire_a], InputWire):
+        #     client_id = self.circuit[wire_a].owner_id
+        #     a = self.clients[client_id].get_input_share(wire_a, self.client_id)
+        # else:
+        #     a = self.get_input_share(wire_a, self.client_id)
+
+        # if isinstance(self.circuit[wire_b], InputWire):
+        #     client_id = self.circuit[wire_b].owner_id
+        #     b = self.clients[client_id].get_input_share(wire_b, self.client_id)
+        # else:
+        #     b = self.get_input_share(wire_b, self.client_id)
+
+        # a -= self.beaver_shares[wire_id][0]
+        # b -= self.beaver_shares[wire_id][1]
+
+
+        a = self.get_input_share(wire_a, self.client_id)
+        b = self.get_input_share(wire_b, self.client_id)
+        print(f"client_id: {self.client_id}, A: {a}, B: {b}")
+
+        a -= self.beaver_shares[wire_id][0]
+        b -= self.beaver_shares[wire_id][1]
+
+        return [a % self.mod, b % self.mod]
 
     def get_output_share(self, wire_id: int) -> int:
         """Returns the share that this client calculated for the wire [wire_id], to be used to reconstruct the value of
@@ -244,7 +265,17 @@ class Client:
 
         output_share = 0
         if isinstance(gate, MultWire):
-            masked_shares = self.get_masked_shares(wire_id)
+            a = []
+            b = []
+            for client in self.clients:
+                masked_shares = client.get_masked_shares(wire_id)
+                a.append(masked_shares[0])
+                b.append(masked_shares[1])
+
+            a_prime = BGW.recover_secret(a, self.mod)
+            b_prime = BGW.recover_secret(b, self.mod)
+
+            print(f"client: {self.client_id} beaver: {self.beaver_shares} a: {a}, b: {b}")
 
             is_alice = (self.client_id == 0)
 
@@ -252,8 +283,8 @@ class Client:
                                 self.beaver_shares[wire_id][0],
                                 self.beaver_shares[wire_id][1],
                                 self.beaver_shares[wire_id][2],
-                                masked_shares[0],
-                                masked_shares[1],
+                                a_prime,
+                                b_prime,
                                 self.mod
                                 )
 
@@ -283,9 +314,13 @@ class Client:
 
         for wire_id in range(start_at_wire_id, len(self.circuit)):
             if isinstance(self.circuit[start_at_wire_id], MultWire):
-                self.output[wire_id] = self.get_output_share(wire_id)
-                self.input_shares[wire_id][self.client_id] = self.output[wire_id]
-                return wire_id
+                if self.semaphore == False:
+                    self.semaphore = True
+                    return wire_id
+                else:
+                    self.semaphore = False
+                    self.output[wire_id] = self.get_output_share(wire_id)
+                    self.input_shares[wire_id][self.client_id] = self.output[wire_id]              
             else:
                 self.output[wire_id] = self.get_output_share(wire_id)
                 self.input_shares[wire_id][self.client_id] = self.output[wire_id]
