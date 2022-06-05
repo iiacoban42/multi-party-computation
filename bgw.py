@@ -103,7 +103,7 @@ class BGW:
         return res % mod
 
     @staticmethod
-    def run_circuit(clients: List[Client]) -> Dict[int, int]:
+    def run_circuit(clients: List[Client], mod) -> Dict[int, int]:
         """Makes the [clients] interactively compute their circuit by synchronously invoking their methods, and returns
         all outputs of the circuit."""
 
@@ -112,9 +112,9 @@ class BGW:
             client.local_setup()
 
         for client in clients:
-                client.interactive_setup()
+            client.interactive_setup()
 
-        progress = [0 for _ in range(len(clients))]
+        progress = [-1 for _ in range(len(clients))]
 
         while True:
             if progress[0] is None:
@@ -130,7 +130,7 @@ class BGW:
             if circuit == {}:
                 circuit = client.get_outputs()
             else:
-                circuit = {k: circuit.get(k, 0) + client.get_outputs().get(k, 0) for k in set(circuit)}
+                circuit = {k: (circuit.get(k, 0) + client.get_outputs().get(k, 0)) % mod for k in set(circuit)}
 
         return circuit
 
@@ -202,7 +202,28 @@ class Client:
         """Returns the share of this client's input at wire [wire_id] that they created for client [requester_id]. This
         client should validate that this request is sensible, but may assume that the requester is
         honest-but-curious."""
-        return self.input_shares[wire_id][requester_id]
+        if self.input_shares[wire_id] is not None:
+            return self.input_shares[wire_id][requester_id]
+
+    def local_setup(self):
+        """Performs the local part of the setup, which consists of creating shares for this client's inputs."""
+        self.input_shares = {}
+        for wire_id, wire in enumerate(self.circuit):
+            self.input_shares[wire_id] = [0 for _ in range(len(self.clients))]
+        for (wire, private_value) in self.inputs.items():
+            self.input_shares[wire] = BGW.create_shares(self.rng, private_value, len(self.clients), self.mod)
+
+    def interactive_setup(self):
+        """Performs the interactive part of the setup, which consist of retrieving shares of Beaver triples from the
+        TTP and fetching the shares that other clients have created of their inputs for this client."""
+        self.beaver_shares = {}
+        self.peer_shares = {}
+
+        for wire_id, wire in enumerate(self.circuit):
+            if isinstance(wire, MultWire):
+                self.beaver_shares[wire_id] = self.ttp.get_beaver_triple(wire_id, self.client_id)
+            elif isinstance(wire, InputWire):
+                self.input_shares[wire_id][self.client_id] = self.clients[wire.owner_id].get_input_share(wire_id, self.client_id)
 
 
     def get_masked_shares(self, wire_id: int) -> [int, int]:
@@ -211,8 +232,8 @@ class Client:
         wire_a = self.circuit[wire_id].wire_a_id
         wire_b = self.circuit[wire_id].wire_b_id
 
-        a = self.get_input_share(wire_a, self.client_id) - self.beaver_shares[wire_a][0]
-        b = self.get_input_share(wire_b, self.client_id) - self.beaver_shares[wire_b][1]
+        a = self.get_input_share(wire_a, self.client_id) - self.beaver_shares[wire_id][0]
+        b = self.get_input_share(wire_b, self.client_id) - self.beaver_shares[wire_id][1]
         return [a, b]
 
     def get_output_share(self, wire_id: int) -> int:
@@ -227,17 +248,20 @@ class Client:
 
             is_alice = (self.client_id == 0)
 
-            output_share = BGW.mult(is_alice,  self.beaver_shares[wire_id][0],
-                            self.beaver_shares[wire_id][1],
-                            self.beaver_shares[wire_id][2],
-                            masked_shares[0],
-                            masked_shares[1],
-                            self.mod
-                        )
+            output_share = BGW.mult(is_alice,
+                                self.beaver_shares[wire_id][0],
+                                self.beaver_shares[wire_id][1],
+                                self.beaver_shares[wire_id][2],
+                                masked_shares[0],
+                                masked_shares[1],
+                                self.mod
+                                )
+
         elif isinstance(gate, AddWire):
             output_share = BGW.add(self.get_input_share(gate.wire_a_id, self.client_id),
                                    self.get_input_share(gate.wire_b_id, self.client_id),
-                                   self.mod)
+                                   self.mod
+                                   )
 
         elif isinstance(gate, ConstMultWire):
             output_share = BGW.const_mult(gate.c,
@@ -249,25 +273,6 @@ class Client:
 
         return output_share
 
-    def local_setup(self):
-        """Performs the local part of the setup, which consists of creating shares for this client's inputs."""
-        self.input_shares = {}
-        for (wire, private_value) in self.inputs.items():
-            self.input_shares[wire] = BGW.create_shares(self.rng, private_value, len(self.clients), self.mod)
-
-    def interactive_setup(self):
-        """Performs the interactive part of the setup, which consist of retrieving shares of Beaver triples from the
-        TTP and fetching the shares that other clients have created of their inputs for this client."""
-        self.beaver_shares = {}
-        self.peer_shares = {}
-        for wire, _ in self.inputs.items():
-            self.beaver_shares[wire] = self.ttp.get_beaver_triple(wire, self.client_id)
-
-            self.peer_shares[wire] = []
-
-            for client in self.clients:
-                self.peer_shares[wire].append(client.get_input_share(wire, self.client_id))
-
     def run_circuit_until_mult(self, start_at_wire_id: int) -> int | None:
         """Runs the circuit starting at wire [start_at_wire_id] until it encounters a multiplication gate. If a
         multiplication gate is encountered, this client performs some local computation, and then returns the id of the
@@ -276,12 +281,14 @@ class Client:
         continues to run the circuit until it encounters another multiplication gate. If this client is done with the
         circuit, this function returns `None`."""
 
-        for i in range(start_at_wire_id, len(self.circuit)):
+        for wire_id in range(start_at_wire_id, len(self.circuit)):
             if isinstance(self.circuit[start_at_wire_id], MultWire):
-                self.output[i] = self.get_output_share(i)
-                return i
+                self.output[wire_id] = self.get_output_share(wire_id)
+                self.input_shares[wire_id][self.client_id] = self.output[wire_id]
+                return wire_id
             else:
-                self.output[i] = self.get_output_share(i)
+                self.output[wire_id] = self.get_output_share(wire_id)
+                self.input_shares[wire_id][self.client_id] = self.output[wire_id]
 
         return None
 
@@ -416,7 +423,7 @@ def main():
         Client(2, ttp, circuit, {2: 3}, mod, rng)
     ]
 
-    print(BGW.run_circuit(clients))
+    print(BGW.run_circuit(clients, mod))
 
 
 if __name__ == "__main__":
