@@ -103,7 +103,7 @@ class BGW:
         return res % mod
 
     @staticmethod
-    def run_circuit(clients: List[Client], mod) -> Dict[int, int]:
+    def run_circuit(clients: List[Client]) -> Dict[int, int]:
         """Makes the [clients] interactively compute their circuit by synchronously invoking their methods, and returns
         all outputs of the circuit."""
 
@@ -129,7 +129,7 @@ class BGW:
             if circuit == {}:
                 circuit = client.get_outputs()
             else:
-                circuit = {k: (circuit.get(k, 0) + client.get_outputs().get(k, 0)) % mod for k in set(circuit)}
+                circuit = {k: (circuit.get(k, 0) + client.get_outputs().get(k, 0)) % clients[0].mod for k in set(circuit)}
 
         return circuit
 
@@ -151,7 +151,6 @@ class TTP:
         y = self.rng.randrange(self.mod)
         z = x*y % self.mod
 
-        print(f"Triple({x}, {y}, {z})")
         x_shares = BGW.create_shares(self.rng, x, self.client_count, self.mod)
         y_shares = BGW.create_shares(self.rng, y, self.client_count, self.mod)
         z_shares = BGW.create_shares(self.rng, z, self.client_count, self.mod)
@@ -250,7 +249,6 @@ class Client:
 
         a = self.get_input_share(wire_a, self.client_id)
         b = self.get_input_share(wire_b, self.client_id)
-        print(f"client_id: {self.client_id}, A: {a}, B: {b}")
 
         a -= self.beaver_shares[wire_id][0]
         b -= self.beaver_shares[wire_id][1]
@@ -274,8 +272,6 @@ class Client:
 
             a_prime = BGW.recover_secret(a, self.mod)
             b_prime = BGW.recover_secret(b, self.mod)
-
-            print(f"client: {self.client_id} beaver: {self.beaver_shares} a: {a}, b: {b}")
 
             is_alice = (self.client_id == 0)
 
@@ -313,17 +309,20 @@ class Client:
         circuit, this function returns `None`."""
 
         for wire_id in range(start_at_wire_id, len(self.circuit)):
-            if isinstance(self.circuit[start_at_wire_id], MultWire):
+            wire = self.circuit[wire_id]
+            if isinstance(wire, MultWire):
                 if self.semaphore == False:
                     self.semaphore = True
                     return wire_id
                 else:
                     self.semaphore = False
-                    self.output[wire_id] = self.get_output_share(wire_id)
-                    self.input_shares[wire_id][self.client_id] = self.output[wire_id]              
+                    if wire.is_output:
+                        self.output[wire_id] = self.get_output_share(wire_id)
+                    self.input_shares[wire_id][self.client_id] = self.get_output_share(wire_id)
             else:
-                self.output[wire_id] = self.get_output_share(wire_id)
-                self.input_shares[wire_id][self.client_id] = self.output[wire_id]
+                if wire.is_output:
+                    self.output[wire_id] = self.get_output_share(wire_id)
+                self.input_shares[wire_id][self.client_id] = self.get_output_share(wire_id)
 
         return None
 
@@ -458,7 +457,7 @@ def main():
         Client(2, ttp, circuit, {2: 3}, mod, rng)
     ]
 
-    print(BGW.run_circuit(clients, mod))
+    print(BGW.run_circuit(clients))
 
 
 if __name__ == "__main__":
