@@ -2,8 +2,9 @@ from __future__ import annotations
 
 from abc import ABC
 from dataclasses import dataclass
+import random
 from typing import Callable, Dict, List
-
+from cryptography.fernet import Fernet
 
 @dataclass
 class Wire(ABC):
@@ -26,11 +27,11 @@ class GateWire(Wire):
     """The output wire of a gate that operates on inputs `X` and `Y` and outputs a value according to [gate]."""
 
     input_x_id: int
-    """The wire corresponding to input `X`, as identified by that wire's index in the list of wires (i.e. circuit) that 
+    """The wire corresponding to input `X`, as identified by that wire's index in the list of wires (i.e. circuit) that
     this wire is part of."""
 
     input_y_id: int
-    """The wire corresponding to input `Y`, as identified by that wire's index in the list of wires (i.e. circuit) that 
+    """The wire corresponding to input `Y`, as identified by that wire's index in the list of wires (i.e. circuit) that
     this wire is part of."""
 
     gate: Callable[[bool, bool], bool]
@@ -43,11 +44,11 @@ class GarbledGateWire(Wire):
     garbled [keys]."""
 
     input_x_id: int
-    """The wire corresponding to input `X`, as identified by that wire's index in the list of wires (i.e. circuit) that 
+    """The wire corresponding to input `X`, as identified by that wire's index in the list of wires (i.e. circuit) that
     this wire is part of."""
 
     input_y_id: int
-    """The wire corresponding to input `Y`, as identified by that wire's index in the list of wires (i.e. circuit) that 
+    """The wire corresponding to input `Y`, as identified by that wire's index in the list of wires (i.e. circuit) that
     this wire is part of."""
 
     keys: List[bytes]
@@ -59,61 +60,153 @@ class Alice:
 
     def __init__(self, circuit: List[Wire], inputs: Dict[int, bool]):
         """Initializes Alice with knowledge of the [circuit] and her own private [inputs]."""
-        raise Exception("Not implemented.")
+
+        self.circuit = circuit
+        self.inputs = inputs
+        self.keys = {}
+        self.garbled_circuit = []
 
     def generate_wire_keys(self):
         """Generates a pair of keys for each wire in the circuit, one representing `True` and the other representing
         `False`."""
-        raise Exception("Not implemented.")
+
+        for wire in range(len(self.circuit)):
+            self.keys[wire] = [Fernet.generate_key(), Fernet.generate_key()]
+
+    def _encrypt_output_keys(self, wire, wire_id) -> List[bytes]:
+        wire_x = wire.input_x_id
+        wire_y = wire.input_y_id
+
+        x_0 =  Fernet(self.keys[wire_x][0])
+        x_1 =  Fernet(self.keys[wire_x][1])
+        y_0 =  Fernet(self.keys[wire_y][0])
+        y_1 =  Fernet(self.keys[wire_y][1])
+
+        z_00 = self.keys[wire_id][int(wire.gate(False, False))]
+        z_01 = self.keys[wire_id][int(wire.gate(False, True))]
+        z_10 = self.keys[wire_id][int(wire.gate(True, False))]
+        z_11 = self.keys[wire_id][int(wire.gate(True, True))]
+
+        z_00 = y_0.encrypt(x_0.encrypt(z_00))
+        z_01 = y_1.encrypt(x_0.encrypt(z_01))
+        z_10 = y_0.encrypt(x_1.encrypt(z_10))
+        z_11 = y_1.encrypt(x_1.encrypt(z_11))
+
+        output_keys = [z_00, z_01, z_10, z_11]
+
+        random.shuffle(output_keys)
+
+        return output_keys
+
 
     def generate_garbled_circuit(self):
         """Generates the garbled circuit. In a garbled circuit, the [InputWire]s are the same, but each [GateWire] is
         replaced by a [GarbledGateWire]."""
-        raise Exception("Not implemented.")
+
+        for wire_id, wire in enumerate(self.circuit):
+            if isinstance(wire, InputWire):
+                self.garbled_circuit.append(wire)
+            else:
+                output_keys = self._encrypt_output_keys(wire, wire_id)
+                self.garbled_circuit.append(GarbledGateWire(wire.is_output,
+                                                            wire.input_x_id,
+                                                            wire.input_y_id,
+                                                            output_keys
+                                                            )
+                                            )
 
     def get_alice_input_key(self, wire_id: int) -> bytes:
         """Returns the key corresponding to Alice's input at wire [wire_id]."""
-        raise Exception("Not implemented.")
+
+        bit_value = self.inputs[wire_id]
+        return self.keys[wire_id][int(bit_value)]
+
 
     def get_bob_input_key(self, wire_id: int, bobs_private_value: bool) -> bytes:
         """Runs oblivious transfer to allow Bob to retrieve the key for wire [wire_id] for Bob's private value
         [bobs_private_value]. For simplicity, you may assume that Alice is super duper honest and will definitely not
         remember the fact that Bob sent his private value to her. So you can just return the correct key here directly
         without any cryptography going on."""
-        raise Exception("Not implemented.")
+
+        return self.keys[wire_id][int(bobs_private_value)]
 
     def get_output(self, wire_id: int, key: bytes) -> bool:
         """Returns the output bit corresponding to wire [wire_id] given that Bob found [key] for this wire. Alice should
          validate that this request is sensible, but may assume that Bob is honest-but-curious."""
-        raise Exception("Not implemented.")
-
+        if self.keys[wire_id][0] == key:
+            return False
+        elif self.keys[wire_id][1] == key:
+            return True
 
 class Bob:
     """Bob, the client who evaluates the garbled circuit."""
 
     def __init__(self, alice: Alice, inputs: Dict[int, bool]):
         """Initializes Bob with knowledge of [Alice] and his own private [inputs]."""
-        raise Exception("Not implemented.")
+        self.alice = alice
+        self.bob_inputs = inputs
+        self.bob_keys = {}
+        self.alice_keys = {}
+        self.output = {}
 
     def get_setup_info(self):
         """Retrieves the following information from Alice: the garbled circuit, Alice's input keys, and Bob's input
         keys."""
-        raise Exception("Not implemented.")
+        self.circuit = self.alice.garbled_circuit
+        for wire_id, wire in enumerate(self.circuit):
+            if isinstance(wire, InputWire):
+                if wire.alice_is_owner:
+                    self.alice_keys[wire_id] = self.alice.get_alice_input_key(wire_id)
+                else:
+                    bit_val = self.bob_inputs[wire_id]
+                    self.bob_keys[wire_id] = self.alice.get_bob_input_key(wire_id, bit_val)
+
+    def _decrypt_output_keys(self, x_key, y_key, encrypted_keys):
+
+        x_key =  Fernet(x_key)
+        y_key =  Fernet(y_key)
+
+        for i in range(4):
+
+            try:
+                key = x_key.decrypt(y_key.decrypt(encrypted_keys[i]))
+                return key
+            except:
+                pass
 
     def evaluate(self):
         """Evaluates the garbled circuit retrieved from Alice. At the end of this method, Bob knows exactly which output
         keys belong to which wire, but has not learnt more about whether they correspond to `True` or `False`."""
-        raise Exception("Not implemented.")
+        self.output_keys = {}
+        for wire_id, wire in enumerate(self.circuit):
+            if isinstance(wire, GarbledGateWire):
+                wire_x = wire.input_x_id
+                wire_y = wire.input_y_id
+
+                x_key = self.output_keys[wire_x]
+                y_key = self.output_keys[wire_y]
+                self.output_keys[wire_id] = self._decrypt_output_keys(x_key, y_key, wire.keys)
+            else:
+                if wire_id in self.alice_keys:
+                    self.output_keys[wire_id] = self.alice_keys[wire_id]
+                else:
+                    self.output_keys[wire_id] = self.bob_keys[wire_id]
 
     def retrieve_outputs(self) -> Dict[int, bool]:
         """Determines the semantic meaning of the keys that Bob obtained in [evaluate] for the output wires by
         interacting with Alice."""
-        raise Exception("Not implemented.")
-
+        for wire_id, wire in enumerate(self.circuit):
+            if wire.is_output:
+                self.output[wire_id] = self.alice.get_output(wire_id, self.output_keys[wire_id])
+        return self.output
 
 def run_garbled_circuit(alice: Alice, bob: Bob) -> Dict[int, bool]:
     """Evaluates the garbled circuit through Alice and Bob and returns the outputs."""
-    raise Exception("Not implemented.")
+    alice.generate_wire_keys()
+    alice.generate_garbled_circuit()
+    bob.get_setup_info()
+    bob.evaluate()
+    return bob.retrieve_outputs()
 
 
 def main():
