@@ -5,7 +5,6 @@ from dataclasses import dataclass
 from random import SystemRandom
 from typing import Dict, List
 
-
 @dataclass
 class Wire(ABC):
     """Any kind of wire in the circuit."""
@@ -67,6 +66,7 @@ class BGW:
     def create_shares(rng: SystemRandom, secret: int, share_count: int, mod: int) -> List[int]:
         """Divides the [secret] into [share_count] additive secret shares under modulo [mod] using [rng] as a source of
         randomness."""
+        print("create_shares_called")
         shares = []
         for _ in range(share_count-1):
             shares.append(rng.randrange(mod))
@@ -78,11 +78,13 @@ class BGW:
     @staticmethod
     def recover_secret(shares: List[int], mod: int) -> int:
         """Reconstructs the secret that the additive secret [shares] make up under modulo [mod]."""
+        print("recover_secret_called")
         return sum(shares) % mod
 
     @staticmethod
     def add(a_share: int, b_share: int, mod: int) -> int:
         """Adds the shares [a_share] and [b_share] together under modulo [mod]."""
+        print("add_called")
         return (a_share + b_share) % mod
 
     @staticmethod
@@ -94,7 +96,7 @@ class BGW:
     def mult(is_alice: bool, x_share: int, y_share: int, z_share: int, a_prime: int, b_prime: int, mod: int) -> int:
         """Performs the masked multiplication corresponding to `A * B` using the formula from the slides, under modulo
         [mod]. The constant term is added only if [is_alice] is `True`."""
-
+        print("mult_called")
         res = a_prime * y_share + b_prime * x_share + z_share
 
         if is_alice:
@@ -164,6 +166,7 @@ class TTP:
     def get_beaver_triple(self, gate_id: int, client_id: int) -> [int, int, int]:
         """Returns shares of the Beaver triple for multiplication gate [gate_id] for [client_id]. Make sure that clients
         requesting shares for the same [gate_id] actually get shares of the same Beaver triple."""
+        print("beaver_called")
         if gate_id in self.triples:
 
             return [self.triples[gate_id][0][client_id],
@@ -230,22 +233,6 @@ class Client:
         [wire_id]."""
         wire_a = self.circuit[wire_id].wire_a_id
         wire_b = self.circuit[wire_id].wire_b_id
-
-        # if isinstance(self.circuit[wire_a], InputWire):
-        #     client_id = self.circuit[wire_a].owner_id
-        #     a = self.clients[client_id].get_input_share(wire_a, self.client_id)
-        # else:
-        #     a = self.get_input_share(wire_a, self.client_id)
-
-        # if isinstance(self.circuit[wire_b], InputWire):
-        #     client_id = self.circuit[wire_b].owner_id
-        #     b = self.clients[client_id].get_input_share(wire_b, self.client_id)
-        # else:
-        #     b = self.get_input_share(wire_b, self.client_id)
-
-        # a -= self.beaver_shares[wire_id][0]
-        # b -= self.beaver_shares[wire_id][1]
-
 
         a = self.get_input_share(wire_a, self.client_id)
         b = self.get_input_share(wire_b, self.client_id)
@@ -446,18 +433,55 @@ def main():
         ]
     }
 
-    circuit = circuits["basic"]
     mod = 1024
     rng = SystemRandom(0)
-
     ttp = TTP(3, mod, rng)
+
+    circuit = circuits["basic"]
+
+
     clients = [
         Client(0, ttp, circuit, {0: 9}, mod, rng),
         Client(1, ttp, circuit, {1: 5}, mod, rng),
         Client(2, ttp, circuit, {2: 3}, mod, rng)
     ]
+    print(f"basic {BGW.run_circuit(clients)}")
 
-    print(BGW.run_circuit(clients))
+    circuit = circuits["deep"]
+
+    clients = [
+        Client(0, ttp, circuit, {0: 9}, mod, rng),
+        Client(1, ttp, circuit, {1: 5}, mod, rng),
+        Client(2, ttp, circuit, {2: 3, 3:4}, mod, rng)
+    ]
+    print(f"deep {BGW.run_circuit(clients)}")
+
+    circuit = circuits["wide"]
+
+    clients = [
+        Client(0, ttp, circuit, {0: 1, 1: 0, 2: 5, 3: 2}, mod, rng),
+        Client(1, ttp, circuit, {5: 1, 6: 7, 7: 10, 8: 5}, mod, rng),
+        Client(2, ttp, circuit, {9: 1, 10: 1, 11: 25, 12: 5}, mod, rng)
+    ]
+    print(f"wide {BGW.run_circuit(clients)}")
+
+    circuit = circuits["adder"]
+
+    clients = [
+        Client(0, ttp, circuit, {0: 9}, mod, rng),
+        Client(1, ttp, circuit, {1: 5}, mod, rng),
+        Client(2, ttp, circuit, {2: 3}, mod, rng)
+    ]
+    print(f"adder {BGW.run_circuit(clients)}")
+
+    circuit = circuits["xors"]
+
+    clients = [
+        Client(0, ttp, circuit, {0: 1, 1: 0}, mod, rng),
+        Client(1, ttp, circuit, {2: 1, 3: 0}, mod, rng),
+        Client(2, ttp, circuit, {4: 1, 5: 0}, mod, rng)
+    ]
+    print(f"xors {BGW.run_circuit(clients)}")
 
 
 if __name__ == "__main__":

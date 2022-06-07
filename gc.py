@@ -92,6 +92,8 @@ class Alice:
         z_10 = y_0.encrypt(x_1.encrypt(z_10))
         z_11 = y_1.encrypt(x_1.encrypt(z_11))
 
+        for i in range(8):
+            print("AES encrypt")
         output_keys = [z_00, z_01, z_10, z_11]
 
         random.shuffle(output_keys)
@@ -127,6 +129,8 @@ class Alice:
         [bobs_private_value]. For simplicity, you may assume that Alice is super duper honest and will definitely not
         remember the fact that Bob sent his private value to her. So you can just return the correct key here directly
         without any cryptography going on."""
+
+        print("OT")
 
         return self.keys[wire_id][int(bobs_private_value)]
 
@@ -165,14 +169,15 @@ class Bob:
 
         x_key =  Fernet(x_key)
         y_key =  Fernet(y_key)
-
+        key = None
         for i in range(4):
-
+            print("AES decrypt")
             try:
                 key = x_key.decrypt(y_key.decrypt(encrypted_keys[i]))
-                return key
             except:
                 pass
+
+        return key
 
     def evaluate(self):
         """Evaluates the garbled circuit retrieved from Alice. At the end of this method, Bob knows exactly which output
@@ -323,8 +328,30 @@ def main():
     alice = Alice(circuits["basic"], {0: True, 1: False})
     bob = Bob(alice, {2: False, 3: True})
 
-    print(run_garbled_circuit(alice, bob))
+    print(f"basic {run_garbled_circuit(alice, bob)}")
 
+
+    alice = Alice(circuits["deep"], {0: True, 1: False})
+    bob = Bob(alice, {2: False, 3: True})
+
+    print(f"deep {run_garbled_circuit(alice, bob)}")
+
+
+    alice = Alice(circuits["wide"], {0: True, 1: False, 2: True, 3: False, 4: True, 5: True})
+    bob = Bob(alice, {6: False, 7: True, 8: False, 9: True, 10: False, 11: True})
+
+    print(f"wide {run_garbled_circuit(alice, bob)}")
+
+
+    alice = Alice(circuits["adder"], {0: True, 1: False, 2: True, 3: False})
+    bob = Bob(alice, { 4: True, 5: True, 6: False, 7: True})
+
+    print(f"adder {run_garbled_circuit(alice, bob)}")
+
+    alice = Alice(circuits["xors"], {0: True, 1: False, 2:True})
+    bob = Bob(alice, {3: False, 4: True, 5: False})
+
+    print(f"xors {run_garbled_circuit(alice, bob)}")
 
 if __name__ == "__main__":
     main()
