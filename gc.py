@@ -181,6 +181,7 @@ class Bob:
         key = None
         for k in encrypted_keys:
             print("AES decrypt")
+            print("AES decrypt")
             try:
                 key = x_key.decrypt(y_key.decrypt(k))
             except:
