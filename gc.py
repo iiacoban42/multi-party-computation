@@ -92,8 +92,9 @@ class Alice:
         z_10 = y_0.encrypt(x_1.encrypt(z_10))
         z_11 = y_1.encrypt(x_1.encrypt(z_11))
 
-        for i in range(8):
+        for _ in range(8):
             print("AES encrypt")
+
         output_keys = [z_00, z_01, z_10, z_11]
 
         random.shuffle(output_keys)
@@ -117,10 +118,15 @@ class Alice:
                                                             )
                                             )
 
+    def get_garbled_circuit(self) -> Dict:
+        print("message: garbled_circuit")
+        return self.garbled_circuit
+
     def get_alice_input_key(self, wire_id: int) -> bytes:
         """Returns the key corresponding to Alice's input at wire [wire_id]."""
 
         bit_value = self.inputs[wire_id]
+        print("message: key_message")
         return self.keys[wire_id][int(bit_value)]
 
 
@@ -131,12 +137,15 @@ class Alice:
         without any cryptography going on."""
 
         print("OT")
-
+        print("message: key_message")
         return self.keys[wire_id][int(bobs_private_value)]
 
     def get_output(self, wire_id: int, key: bytes) -> bool:
         """Returns the output bit corresponding to wire [wire_id] given that Bob found [key] for this wire. Alice should
          validate that this request is sensible, but may assume that Bob is honest-but-curious."""
+
+        print("message: output_bit")
+
         if self.keys[wire_id][0] == key:
             return False
         elif self.keys[wire_id][1] == key:
@@ -156,7 +165,7 @@ class Bob:
     def get_setup_info(self):
         """Retrieves the following information from Alice: the garbled circuit, Alice's input keys, and Bob's input
         keys."""
-        self.circuit = self.alice.garbled_circuit
+        self.circuit = self.alice.get_garbled_circuit()
         for wire_id, wire in enumerate(self.circuit):
             if isinstance(wire, InputWire):
                 if wire.alice_is_owner:
@@ -170,10 +179,10 @@ class Bob:
         x_key =  Fernet(x_key)
         y_key =  Fernet(y_key)
         key = None
-        for i in range(4):
+        for k in encrypted_keys:
             print("AES decrypt")
             try:
-                key = x_key.decrypt(y_key.decrypt(encrypted_keys[i]))
+                key = x_key.decrypt(y_key.decrypt(k))
             except:
                 pass
 
@@ -200,6 +209,9 @@ class Bob:
     def retrieve_outputs(self) -> Dict[int, bool]:
         """Determines the semantic meaning of the keys that Bob obtained in [evaluate] for the output wires by
         interacting with Alice."""
+
+        print("message: output")
+
         for wire_id, wire in enumerate(self.circuit):
             if wire.is_output:
                 self.output[wire_id] = self.alice.get_output(wire_id, self.output_keys[wire_id])

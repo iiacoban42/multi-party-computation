@@ -62,8 +62,13 @@ AES encrypt
 AES encrypt
 AES encrypt
 AES encrypt
+message: garbled_circuit
+message: key_message
+message: key_message
 OT
+message: key_message
 OT
+message: key_message
 AES decrypt
 AES decrypt
 AES decrypt
@@ -96,4 +101,6 @@ AES decrypt
 AES decrypt
 AES decrypt
 AES decrypt
+message: output
+message: output_bit
 deep {11: True}

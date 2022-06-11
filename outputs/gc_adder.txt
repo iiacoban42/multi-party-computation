@@ -134,10 +134,19 @@ AES encrypt
 AES encrypt
 AES encrypt
 AES encrypt
+message: garbled_circuit
+message: key_message
+message: key_message
+message: key_message
+message: key_message
 OT
+message: key_message
 OT
+message: key_message
 OT
+message: key_message
 OT
+message: key_message
 AES decrypt
 AES decrypt
 AES decrypt
@@ -206,4 +215,10 @@ AES decrypt
 AES decrypt
 AES decrypt
 AES decrypt
+message: output
+message: output_bit
+message: output_bit
+message: output_bit
+message: output_bit
+message: output_bit
 adder {8: False, 11: False, 16: False, 21: False, 24: True}

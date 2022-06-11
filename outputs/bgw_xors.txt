@@ -4,354 +4,631 @@ create_shares_called
 create_shares_called
 create_shares_called
 create_shares_called
+message: input_shares_sent: 1 to 0; wire=2
+message: input_shares_sent: 1 to 0; wire=3
+message: input_shares_sent: 2 to 0; wire=4
+message: input_shares_sent: 2 to 0; wire=5
 beaver_called
+message: beaver_shares_sent
 create_shares_called
 create_shares_called
 create_shares_called
 beaver_called
+message: beaver_shares_sent
 create_shares_called
 create_shares_called
 create_shares_called
 beaver_called
+message: beaver_shares_sent
 create_shares_called
 create_shares_called
 create_shares_called
 beaver_called
+message: beaver_shares_sent
 create_shares_called
 create_shares_called
 create_shares_called
 beaver_called
+message: beaver_shares_sent
 create_shares_called
 create_shares_called
 create_shares_called
 beaver_called
+message: beaver_shares_sent
 create_shares_called
 create_shares_called
 create_shares_called
 beaver_called
+message: beaver_shares_sent
 create_shares_called
 create_shares_called
 create_shares_called
 beaver_called
+message: beaver_shares_sent
 create_shares_called
 create_shares_called
 create_shares_called
 beaver_called
+message: beaver_shares_sent
 create_shares_called
 create_shares_called
 create_shares_called
 beaver_called
+message: beaver_shares_sent
 create_shares_called
 create_shares_called
 create_shares_called
+message: input_shares_sent: 0 to 1; wire=0
+message: input_shares_sent: 0 to 1; wire=1
+message: input_shares_sent: 2 to 1; wire=4
+message: input_shares_sent: 2 to 1; wire=5
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
+message: input_shares_sent: 0 to 2; wire=0
+message: input_shares_sent: 0 to 2; wire=1
+message: input_shares_sent: 1 to 2; wire=2
+message: input_shares_sent: 1 to 2; wire=3
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 add_called
 add_called
 add_called
+message: input_shares_sent: 0 to 2; wire=0
+message: input_shares_sent: 0 to 2; wire=1
+message: input_shares_sent: 1 to 2; wire=2
+message: input_shares_sent: 1 to 2; wire=3
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
+message: masked_shares_sent: 1 to 0; wire=7
+message: masked_shares_sent: 2 to 0; wire=7
 recover_secret_called
 recover_secret_called
 mult_called
 add_called
 add_called
 add_called
+message: masked_shares_sent: 0 to 1; wire=7
+message: masked_shares_sent: 2 to 1; wire=7
 recover_secret_called
 recover_secret_called
 mult_called
 add_called
 add_called
 add_called
+message: masked_shares_sent: 0 to 2; wire=7
+message: masked_shares_sent: 1 to 2; wire=7
 recover_secret_called
 recover_secret_called
 mult_called
 add_called
 add_called
 add_called
+message: input_shares_sent: 0 to 2; wire=0
+message: input_shares_sent: 0 to 2; wire=1
+message: input_shares_sent: 1 to 2; wire=2
+message: input_shares_sent: 1 to 2; wire=3
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
+message: masked_shares_sent: 1 to 0; wire=11
+message: masked_shares_sent: 2 to 0; wire=11
 recover_secret_called
 recover_secret_called
 mult_called
 add_called
 add_called
 add_called
+message: masked_shares_sent: 0 to 1; wire=11
+message: masked_shares_sent: 2 to 1; wire=11
 recover_secret_called
 recover_secret_called
 mult_called
 add_called
 add_called
 add_called
+message: masked_shares_sent: 0 to 2; wire=11
+message: masked_shares_sent: 1 to 2; wire=11
 recover_secret_called
 recover_secret_called
 mult_called
 add_called
 add_called
 add_called
+message: input_shares_sent: 0 to 2; wire=0
+message: input_shares_sent: 0 to 2; wire=1
+message: input_shares_sent: 1 to 2; wire=2
+message: input_shares_sent: 1 to 2; wire=3
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
+message: masked_shares_sent: 1 to 0; wire=15
+message: masked_shares_sent: 2 to 0; wire=15
 recover_secret_called
 recover_secret_called
 mult_called
 add_called
 add_called
 add_called
+message: masked_shares_sent: 0 to 1; wire=15
+message: masked_shares_sent: 2 to 1; wire=15
 recover_secret_called
 recover_secret_called
 mult_called
 add_called
 add_called
 add_called
+message: masked_shares_sent: 0 to 2; wire=15
+message: masked_shares_sent: 1 to 2; wire=15
 recover_secret_called
 recover_secret_called
 mult_called
 add_called
 add_called
 add_called
+message: input_shares_sent: 0 to 2; wire=0
+message: input_shares_sent: 0 to 2; wire=1
+message: input_shares_sent: 1 to 2; wire=2
+message: input_shares_sent: 1 to 2; wire=3
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
+message: masked_shares_sent: 1 to 0; wire=19
+message: masked_shares_sent: 2 to 0; wire=19
 recover_secret_called
 recover_secret_called
 mult_called
 add_called
 add_called
 add_called
+message: masked_shares_sent: 0 to 1; wire=19
+message: masked_shares_sent: 2 to 1; wire=19
 recover_secret_called
 recover_secret_called
 mult_called
 add_called
 add_called
 add_called
+message: masked_shares_sent: 0 to 2; wire=19
+message: masked_shares_sent: 1 to 2; wire=19
 recover_secret_called
 recover_secret_called
 mult_called
 add_called
 add_called
 add_called
+message: input_shares_sent: 0 to 2; wire=0
+message: input_shares_sent: 0 to 2; wire=1
+message: input_shares_sent: 1 to 2; wire=2
+message: input_shares_sent: 1 to 2; wire=3
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
+message: masked_shares_sent: 1 to 0; wire=23
+message: masked_shares_sent: 2 to 0; wire=23
 recover_secret_called
 recover_secret_called
 mult_called
 add_called
 add_called
 add_called
+message: masked_shares_sent: 0 to 1; wire=23
+message: masked_shares_sent: 2 to 1; wire=23
 recover_secret_called
 recover_secret_called
 mult_called
 add_called
 add_called
 add_called
+message: masked_shares_sent: 0 to 2; wire=23
+message: masked_shares_sent: 1 to 2; wire=23
 recover_secret_called
 recover_secret_called
 mult_called
 add_called
 add_called
 add_called
+message: input_shares_sent: 0 to 2; wire=0
+message: input_shares_sent: 0 to 2; wire=1
+message: input_shares_sent: 1 to 2; wire=2
+message: input_shares_sent: 1 to 2; wire=3
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
+message: masked_shares_sent: 1 to 0; wire=27
+message: masked_shares_sent: 2 to 0; wire=27
 recover_secret_called
 recover_secret_called
 mult_called
 add_called
 add_called
 add_called
+message: masked_shares_sent: 0 to 1; wire=27
+message: masked_shares_sent: 2 to 1; wire=27
 recover_secret_called
 recover_secret_called
 mult_called
 add_called
 add_called
 add_called
+message: masked_shares_sent: 0 to 2; wire=27
+message: masked_shares_sent: 1 to 2; wire=27
 recover_secret_called
 recover_secret_called
 mult_called
 add_called
 add_called
 add_called
+message: input_shares_sent: 0 to 2; wire=0
+message: input_shares_sent: 0 to 2; wire=1
+message: input_shares_sent: 1 to 2; wire=2
+message: input_shares_sent: 1 to 2; wire=3
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
+message: masked_shares_sent: 1 to 0; wire=31
+message: masked_shares_sent: 2 to 0; wire=31
 recover_secret_called
 recover_secret_called
 mult_called
 add_called
 add_called
 add_called
+message: masked_shares_sent: 0 to 1; wire=31
+message: masked_shares_sent: 2 to 1; wire=31
 recover_secret_called
 recover_secret_called
 mult_called
 add_called
 add_called
 add_called
+message: masked_shares_sent: 0 to 2; wire=31
+message: masked_shares_sent: 1 to 2; wire=31
 recover_secret_called
 recover_secret_called
 mult_called
 add_called
 add_called
 add_called
+message: input_shares_sent: 0 to 2; wire=0
+message: input_shares_sent: 0 to 2; wire=1
+message: input_shares_sent: 1 to 2; wire=2
+message: input_shares_sent: 1 to 2; wire=3
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
+message: masked_shares_sent: 1 to 0; wire=35
+message: masked_shares_sent: 2 to 0; wire=35
 recover_secret_called
 recover_secret_called
 mult_called
 add_called
 add_called
 add_called
+message: masked_shares_sent: 0 to 1; wire=35
+message: masked_shares_sent: 2 to 1; wire=35
 recover_secret_called
 recover_secret_called
 mult_called
 add_called
 add_called
 add_called
+message: masked_shares_sent: 0 to 2; wire=35
+message: masked_shares_sent: 1 to 2; wire=35
 recover_secret_called
 recover_secret_called
 mult_called
 add_called
 add_called
 add_called
+message: input_shares_sent: 0 to 2; wire=0
+message: input_shares_sent: 0 to 2; wire=1
+message: input_shares_sent: 1 to 2; wire=2
+message: input_shares_sent: 1 to 2; wire=3
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
+message: masked_shares_sent: 1 to 0; wire=39
+message: masked_shares_sent: 2 to 0; wire=39
 recover_secret_called
 recover_secret_called
 mult_called
 add_called
 add_called
 add_called
+message: masked_shares_sent: 0 to 1; wire=39
+message: masked_shares_sent: 2 to 1; wire=39
 recover_secret_called
 recover_secret_called
 mult_called
 add_called
 add_called
 add_called
+message: masked_shares_sent: 0 to 2; wire=39
+message: masked_shares_sent: 1 to 2; wire=39
 recover_secret_called
 recover_secret_called
 mult_called
 add_called
 add_called
 add_called
+message: input_shares_sent: 0 to 2; wire=0
+message: input_shares_sent: 0 to 2; wire=1
+message: input_shares_sent: 1 to 2; wire=2
+message: input_shares_sent: 1 to 2; wire=3
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
+message: masked_shares_sent: 1 to 0; wire=43
+message: masked_shares_sent: 2 to 0; wire=43
 recover_secret_called
 recover_secret_called
 mult_called
 add_called
 add_called
+message: masked_shares_sent: 0 to 1; wire=43
+message: masked_shares_sent: 2 to 1; wire=43
 recover_secret_called
 recover_secret_called
 mult_called
 add_called
 add_called
+message: masked_shares_sent: 0 to 2; wire=43
+message: masked_shares_sent: 1 to 2; wire=43
 recover_secret_called
 recover_secret_called
 mult_called
 add_called
 add_called
+message: input_shares_sent: 0 to 2; wire=0
+message: input_shares_sent: 0 to 2; wire=1
+message: input_shares_sent: 1 to 2; wire=2
+message: input_shares_sent: 1 to 2; wire=3
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
 beaver_called
+message: beaver_shares_sent
+message: output_shares_sent: 0
+message: output_shares_sent: 1
+message: output_shares_sent: 1
+message: output_shares_sent: 1
+message: output_shares_sent: 1
+message: output_shares_sent: 1
+message: output_shares_sent: 1
+message: output_shares_sent: 1
+message: output_shares_sent: 1
+message: output_shares_sent: 1
+message: output_shares_sent: 1
+message: output_shares_sent: 2
+message: output_shares_sent: 2
+message: output_shares_sent: 2
+message: output_shares_sent: 2
+message: output_shares_sent: 2
+message: output_shares_sent: 2
+message: output_shares_sent: 2
+message: output_shares_sent: 2
+message: output_shares_sent: 2
+message: output_shares_sent: 2
 xors {33: 0, 37: 1, 9: 1, 41: 1, 13: 1, 45: 0, 17: 1, 21: 1, 25: 0, 29: 1}

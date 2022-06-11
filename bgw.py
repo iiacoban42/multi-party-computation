@@ -167,6 +167,7 @@ class TTP:
         """Returns shares of the Beaver triple for multiplication gate [gate_id] for [client_id]. Make sure that clients
         requesting shares for the same [gate_id] actually get shares of the same Beaver triple."""
         print("beaver_called")
+        print("message: beaver_shares_sent")
         if gate_id in self.triples:
 
             return [self.triples[gate_id][0][client_id],
@@ -205,6 +206,9 @@ class Client:
         """Returns the share of this client's input at wire [wire_id] that they created for client [requester_id]. This
         client should validate that this request is sensible, but may assume that the requester is
         honest-but-curious."""
+        if requester_id != self.client_id:
+            print(f"message: input_shares_sent: {self.client_id} to {requester_id}; wire={wire_id}")
+
         if self.input_shares[wire_id] is not None:
             return self.input_shares[wire_id][requester_id]
 
@@ -252,7 +256,10 @@ class Client:
         if isinstance(gate, MultWire):
             a = []
             b = []
-            for client in self.clients:
+            for client_id, client in enumerate(self.clients):
+                if client_id != self.client_id:
+                    print(f"message: masked_shares_sent: {client_id} to {self.client_id}; wire={wire_id}")
+
                 masked_shares = client.get_masked_shares(wire_id)
                 a.append(masked_shares[0])
                 b.append(masked_shares[1])
@@ -316,6 +323,7 @@ class Client:
     def get_outputs(self) -> Dict[int, int]:
         """Returns a dictionary from wire IDs to the reconstructed outputs at those wires, corresponding to all outputs
         of the circuit."""
+        print(f"message: output_shares_sent: {self.client_id}")
         return self.output
 
 

@@ -1,6 +1,12 @@
 create_shares_called
 create_shares_called
 create_shares_called
+message: input_shares_sent: 1 to 0; wire=1
+message: input_shares_sent: 2 to 0; wire=2
+message: input_shares_sent: 0 to 1; wire=0
+message: input_shares_sent: 2 to 1; wire=2
+message: input_shares_sent: 0 to 2; wire=0
+message: input_shares_sent: 1 to 2; wire=1
 add_called
 add_called
 add_called
@@ -10,4 +16,9 @@ add_called
 add_called
 add_called
 add_called
+message: input_shares_sent: 0 to 2; wire=0
+message: input_shares_sent: 1 to 2; wire=1
+message: output_shares_sent: 0
+message: output_shares_sent: 1
+message: output_shares_sent: 2
 adder {4: 17}
